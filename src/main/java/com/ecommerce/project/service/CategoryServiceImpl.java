@@ -12,6 +12,7 @@ import java.util.Optional;
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
+    //Test Change
     private final List<Category> categories = new ArrayList<>();
 
     private long nextId = 1l;
