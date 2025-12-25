@@ -1,4 +1,4 @@
-package com.ecommerce.project.Controller;
+package com.ecommerce.project.controller;
 
 import com.ecommerce.project.payload.CategoryDTO;
 import com.ecommerce.project.payload.CategoryResponse;
