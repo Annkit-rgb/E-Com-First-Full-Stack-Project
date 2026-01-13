@@ -7,6 +7,7 @@ import com.ecommerce.project.payload.ProductDTO;
 import com.ecommerce.project.payload.ProductResponse;
 import com.ecommerce.project.repositories.CategoryRepository;
 import com.ecommerce.project.repositories.ProductRepository;
+import org.antlr.v4.runtime.misc.NotNull;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,17 +59,52 @@ public class ProductServiceImpl implements ProductService {
         return productResponse;
     }
 
+
+
+
     @Override
-    public ProductResponse searchByCategory(Long categoryId) {
+    public ProductResponse searchByCategory( Long categoryId) {
+
+
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Category","categoryId",categoryId));
 
-        List<Product> products = productRepository.findByCategoryOrderByPriceASC(category);
+        List<Product> products = productRepository.findByCategoryOrderByPriceAsc(category);
 
 
-        return null;
+        List<ProductDTO> productDTOS = products.stream()
+                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .toList();
+
+        ProductResponse productResponse = new ProductResponse();
+
+        productResponse.setContent(productDTOS);
+        return productResponse;
     }
+
+    @Override
+    public ProductResponse searchByKeyword(String keyword) {
+
+
+        List<Product> products = productRepository.findByProductNameLikeIgnoreCase('%' + keyword + '%');
+
+
+        List<ProductDTO> productDTOS = products.stream()
+                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .toList();
+
+        ProductResponse productResponse = new ProductResponse();
+
+        productResponse.setContent(productDTOS);
+        return productResponse;
+
+
+    }
+
+
+
+
 
 
 }
