@@ -4,10 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class APIResponse {
-    public String message;
-    private boolean status;
+public class ProductResponse {
+    private List<ProductDTO> content;
 }
