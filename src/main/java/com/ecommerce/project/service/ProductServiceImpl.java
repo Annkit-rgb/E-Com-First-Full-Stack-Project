@@ -7,12 +7,18 @@ import com.ecommerce.project.payload.ProductDTO;
 import com.ecommerce.project.payload.ProductResponse;
 import com.ecommerce.project.repositories.CategoryRepository;
 import com.ecommerce.project.repositories.ProductRepository;
-import org.antlr.v4.runtime.misc.NotNull;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 
 @Service
@@ -31,11 +37,13 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
-    public ProductDTO addProduct(Long categoryId, Product product) {
+    public ProductDTO addProduct(Long categoryId, ProductDTO productDTO) {
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Category","categoryId",categoryId));
+
+        Product product = modelMapper.map(productDTO, Product.class);
 
         product.setImage("default.png");
         product.setCategory(category);
@@ -103,7 +111,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDTO updateProduct(Long productId, Product product) {
+    public ProductDTO updateProduct(Long productId, ProductDTO productDTO) {
+
+        Product product = modelMapper.map(productDTO, Product.class);
+
 
         Product productFromDb = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product","productId",productId));
@@ -132,6 +143,44 @@ public class ProductServiceImpl implements ProductService {
         productRepository.delete(product);
 
         return modelMapper.map(product, ProductDTO.class);
+    }
+
+    @Override
+    public ProductDTO updateProductImage(Long productId, MultipartFile image) throws IOException {
+       Product productFromDb = productRepository.findById(productId)
+               .orElseThrow(() -> new ResourceNotFoundException("Product","productId",productId));
+       String path = "images/";
+
+       String filename = uploadImage(path, image);
+       productFromDb.setImage(filename);
+
+       Product updatedProduct = productRepository.save(productFromDb);
+
+       return modelMapper.map(updatedProduct, ProductDTO.class);
+    }
+
+    private String uploadImage(String path, MultipartFile file) throws IOException {
+
+        //Get the file names
+        String originalFilename = file.getOriginalFilename();
+        //generate a unique  file name
+        String randomId = UUID.randomUUID().toString();
+        assert originalFilename != null;
+        String fileName = randomId.concat(originalFilename.substring(originalFilename.lastIndexOf('.')));
+        String filepath = path + File.separator + fileName;
+        //check if the path exist and create
+
+        File folder = new File(path);
+         if(!folder.exists()){
+             folder.mkdir();
+         }
+
+        //upload to the server
+        Files.copy(file.getInputStream(), Paths.get(filepath));
+
+
+         //return file name
+        return fileName;
     }
 
 
